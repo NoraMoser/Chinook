@@ -40,11 +40,24 @@ GROUP BY InvoiceDate GLOB "2011*";
 
 -- total_sales_{year}.sql: What are the respective total sales for each of those years?
 
+SELECT SUM(Total)
+FROM Invoice
+WHERE InvoiceDate GLOB "2009*" OR InvoiceDate GLOB "2011*"
+GROUP BY InvoiceDate GLOB "2011*";
+
 
 -- invoice_37_line_item_count.sql: Looking at the InvoiceLine table, provide a query that COUNTs the number of line items for Invoice ID 37.
 
+SELECT COUNT(InvoiceId)
+FROM InvoiceLine
+WHERE InvoiceId = "37";
+
 
 -- line_items_per_invoice.sql: Looking at the InvoiceLine table, provide a query that COUNTs the number of line items for each Invoice. HINT: GROUP BY
+
+SELECT InvoiceId, COUNT(InvoiceId) as "Line Items"
+FROM InvoiceLine
+GROUP BY InvoiceId;
 
 
 -- line_item_track.sql: Provide a query that includes the purchased track name with each invoice line item.
@@ -58,8 +71,17 @@ LEFT JOIN Artist as art ON a.AlbumId = art.ArtistId;
 
 -- line_item_track_artist.sql: Provide a query that includes the purchased track name AND artist name with each invoice line item.
 
+SELECT t.Name, art.Name, il.*
+FROM Track as t LEFT JOIN InvoiceLine as il ON t.TrackId = il.TrackId
+LEFT JOIN Album as a ON t. AlbumId = a.AlbumId
+LEFT JOIN Artist as art ON a.AlbumId = art.ArtistId;
+
 
 -- country_invoices.sql: Provide a query that shows the # of invoices per country. HINT: GROUP BY
+
+SELECT BillingCountry, COUNT(InvoiceId)
+FROM Invoice
+GROUP BY BillingCountry;
 
 
 -- playlists_track_count.sql: Provide a query that shows the total number of tracks in each playlist. The Playlist name should be include on the resulant table.
@@ -118,6 +140,9 @@ GROUP BY Employee.EmployeeId
 
 -- sales_per_country.sql: Provide a query that shows the total sales per country.
 
+SELECT BillingCountry, SUM(Total)
+FROM invoice
+GROUP BY BillingCountry;
 
 -- top_country.sql: Which country's customers spent the most?
 
@@ -128,6 +153,11 @@ GROUP BY i.BillingCountry ORDER BY SUM (i.Total) DESC LIMIT 1;
 
 -- top_2013_track.sql: Provide a query that shows the most purchased track of 2013.
 
+SELECT t.Name 'Track', count(*) 'Purchases'
+FROM Track t, Invoice inv, InvoiceLine il
+WHERE t.TrackId = il.TrackId and inv.InvoiceId = il.InvoiceId and inv.InvoiceDate GLOB "2013*"
+GROUP BY t.TrackId
+ORDER BY COUNT(*) desc LIMIT 1;
 
 -- top_5_tracks.sql: Provide a query that shows the top 5 most purchased tracks over all.
 
@@ -147,3 +177,9 @@ LEFT JOIN Artist as art ON a.ArtistId = art.ArtistId
 GROUP BY art.Name ORDER BY TotalMoney DESC LIMIT 3;
 
 -- top_media_type.sql: Provide a query that shows the most purchased Media Type.
+
+SELECT mt.Name, COUNT (t.MediaTypeId) as NumberSold
+FROM Track as t LEFT JOIN MediaType as mt ON t.MediaTypeId = mt.MediaTypeId
+LEFT JOIN InvoiceLine as il ON t.TrackId = il.TrackId
+LEFT JOIN Invoice as i ON il.InvoiceId = i.InvoiceId
+GROUP BY mt.Name ORDER BY NumberSold DESC LIMIT 1;
